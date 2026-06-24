@@ -2,6 +2,7 @@ import pygame
 
 from entities.pedido import Pedido
 from settings import AMARILLO, BLANCO, META_DINERO, NARANJA, NEGRO, ROJO
+from minijuegos.horno import Horno
 
 
 def _formatear_tiempo(segundos: float) -> str:
@@ -23,23 +24,37 @@ class ScreenJuego:
         self._boton_fallo: pygame.Rect | None = None
 
     def manejar_eventos(self, eventos):
-        for evento in eventos:
-            if evento.type != pygame.MOUSEBUTTONDOWN or evento.button != 1:
-                continue
-
-            if self.gm.estado == "juego":
-                for rect, pedido in self._botones_pedido:
-                    if rect.collidepoint(evento.pos):
-                        self.gm.seleccionar_pedido(pedido)
-                        break
-            elif self.gm.estado == "minijuego":
-                if self._boton_exito and self._boton_exito.collidepoint(evento.pos):
-                    self.gm.registrar_resultado_minijuego(True)
-                elif self._boton_fallo and self._boton_fallo.collidepoint(evento.pos):
-                    self.gm.registrar_resultado_minijuego(False)
+        if self.gm.estado == "juego":
+            for evento in eventos:
+                if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+                    for rect, pedido in self._botones_pedido:
+                        if rect.collidepoint(evento.pos):
+                            self.gm.seleccionar_pedido(pedido)
+                            # Si el pedido requiere el horno, lo instanciamos de inmediato
+                            if self.gm.get_minijuego_actual_id() == "horno":
+                                self.gm.minijuego_actual = Horno()
+                            break
+        elif self.gm.estado == "minijuego":
+            if self.gm.minijuego_actual is not None:
+                self.gm.minijuego_actual.manejar_eventos(eventos)
 
     def actualizar(self, dt):
         self.gm.actualizar_timer(dt)
+        
+        if self.gm.estado == "minijuego":
+            if self.gm.minijuego_actual is not None:
+                self.gm.minijuego_actual.actualizar(dt)
+                
+                # Revisar si el minijuego ya tiene un veredicto (True/False)
+                resultado = self.gm.minijuego_actual.get_resultado()
+                if resultado is not None:
+                    self.gm.registrar_resultado_minijuego(resultado)
+                    self.gm.minijuego_actual = None
+            else:
+                # 🛠️ SOLUCIÓN: Si no hay un archivo de minijuego real para el siguiente paso,
+                # forzamos el éxito del paso pendiente para que la cola avance y no se congele.
+                self.gm.registrar_resultado_minijuego(True)
+                self.gm.minijuego_actual = None
 
     def dibujar(self, pantalla):
         pantalla.fill((40, 30, 25))
@@ -52,7 +67,10 @@ class ScreenJuego:
         if self.gm.estado == "juego":
             self._dibujar_cola_pedidos(pantalla)
         elif self.gm.estado == "minijuego":
-            self._dibujar_placeholder_minijuego(pantalla)
+            if self.gm.minijuego_actual is not None:
+                self.gm.minijuego_actual.dibujar(pantalla)
+            else:
+                self._dibujar_placeholder_minijuego(pantalla) # Para "corte" o "maiz" que siguen pendientes
 
     def _dibujar_hud(self, pantalla):
         tiempo = _formatear_tiempo(self.gm.tiempo_restante)

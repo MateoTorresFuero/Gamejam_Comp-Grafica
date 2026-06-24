@@ -3,6 +3,9 @@ import pygame
 from entities.pedido import Pedido
 from settings import AMARILLO, BLANCO, META_DINERO, NARANJA, NEGRO, ROJO
 
+from minijuegos.horno import Horno
+from minijuegos.corte import Corte
+
 
 def _formatear_tiempo(segundos: float) -> str:
     total = max(0, int(segundos))
@@ -22,37 +25,64 @@ class ScreenJuego:
         self._boton_exito: pygame.Rect | None = None
         self._boton_fallo: pygame.Rect | None = None
 
-    def manejar_eventos(self, eventos):
-        for evento in eventos:
-            if evento.type != pygame.MOUSEBUTTONDOWN or evento.button != 1:
-                continue
+        self.MINIJUEGOS_REGISTRO = {
+            "horno": Horno,
+            "corte": Corte,
+        }
 
-            if self.gm.estado == "juego":
-                for rect, pedido in self._botones_pedido:
-                    if rect.collidepoint(evento.pos):
-                        self.gm.seleccionar_pedido(pedido)
-                        break
-            elif self.gm.estado == "minijuego":
-                if self._boton_exito and self._boton_exito.collidepoint(evento.pos):
-                    self.gm.registrar_resultado_minijuego(True)
-                elif self._boton_fallo and self._boton_fallo.collidepoint(evento.pos):
-                    self.gm.registrar_resultado_minijuego(False)
+    def manejar_eventos(self, eventos):
+        if self.gm.estado == "juego":
+            for evento in eventos:
+                if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+                    for rect, pedido in self._botones_pedido:
+                        if rect.collidepoint(evento.pos):
+                            self.gm.seleccionar_pedido(pedido)
+
+                            # Instanciamos dinámicamente el primer minijuego del pedido
+                            id_minijuego = self.gm.get_minijuego_actual_id()
+                            if id_minijuego in self.MINIJUEGOS_REGISTRO:
+                                self.gm.minijuego_actual = self.MINIJUEGOS_REGISTRO[id_minijuego]()
+                            break
+        elif self.gm.estado == "minijuego":
+            if self.gm.minijuego_actual is not None:
+                self.gm.minijuego_actual.manejar_eventos(eventos)
 
     def actualizar(self, dt):
         self.gm.actualizar_timer(dt)
+        
+        if self.gm.estado == "minijuego":
+            if self.gm.minijuego_actual is not None:
+                self.gm.minijuego_actual.actualizar(dt)
+                
+                # Revisar si el minijuego ya tiene un veredicto (True/False)
+                resultado = self.gm.minijuego_actual.get_resultado()
+                if resultado is not None:
+                    self.gm.registrar_resultado_minijuego(resultado)
+                    self.gm.minijuego_actual = None
+            else:
+                # Si el minijuego anterior se destruyó pero seguimos en estado "minijuego",
+                # significa que el pedido tiene otra etapa en su secuencia.
+                id_siguiente = self.gm.get_minijuego_actual_id()
+                if id_siguiente in self.MINIJUEGOS_REGISTRO:
+                    self.gm.minijuego_actual = self.MINIJUEGOS_REGISTRO[id_siguiente]()
+                else:
+                    # Si el ID no está en nuestro registro (como "maiz" por ahora), lo salta para no colgarse
+                    self.gm.registrar_resultado_minijuego(True)
+                    self.gm.minijuego_actual = None
 
     def dibujar(self, pantalla):
         pantalla.fill((40, 30, 25))
         self._botones_pedido.clear()
-        self._boton_exito = None
-        self._boton_fallo = None
 
         self._dibujar_hud(pantalla)
 
         if self.gm.estado == "juego":
             self._dibujar_cola_pedidos(pantalla)
         elif self.gm.estado == "minijuego":
-            self._dibujar_placeholder_minijuego(pantalla)
+            if self.gm.minijuego_actual is not None:
+                self.gm.minijuego_actual.dibujar(pantalla)
+            else:
+                self._dibujar_placeholder_minijuego(pantalla)
 
     def _dibujar_hud(self, pantalla):
         tiempo = _formatear_tiempo(self.gm.tiempo_restante)

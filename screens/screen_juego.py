@@ -2,7 +2,9 @@ import pygame
 
 from entities.pedido import Pedido
 from settings import AMARILLO, BLANCO, META_DINERO, NARANJA, NEGRO, ROJO
+
 from minijuegos.horno import Horno
+from minijuegos.corte import Corte
 
 
 def _formatear_tiempo(segundos: float) -> str:
@@ -23,6 +25,11 @@ class ScreenJuego:
         self._boton_exito: pygame.Rect | None = None
         self._boton_fallo: pygame.Rect | None = None
 
+        self.MINIJUEGOS_REGISTRO = {
+            "horno": Horno,
+            "corte": Corte,
+        }
+
     def manejar_eventos(self, eventos):
         if self.gm.estado == "juego":
             for evento in eventos:
@@ -30,9 +37,11 @@ class ScreenJuego:
                     for rect, pedido in self._botones_pedido:
                         if rect.collidepoint(evento.pos):
                             self.gm.seleccionar_pedido(pedido)
-                            # Si el pedido requiere el horno, lo instanciamos de inmediato
-                            if self.gm.get_minijuego_actual_id() == "horno":
-                                self.gm.minijuego_actual = Horno()
+
+                            # Instanciamos dinámicamente el primer minijuego del pedido
+                            id_minijuego = self.gm.get_minijuego_actual_id()
+                            if id_minijuego in self.MINIJUEGOS_REGISTRO:
+                                self.gm.minijuego_actual = self.MINIJUEGOS_REGISTRO[id_minijuego]()
                             break
         elif self.gm.estado == "minijuego":
             if self.gm.minijuego_actual is not None:
@@ -51,16 +60,19 @@ class ScreenJuego:
                     self.gm.registrar_resultado_minijuego(resultado)
                     self.gm.minijuego_actual = None
             else:
-                # 🛠️ SOLUCIÓN: Si no hay un archivo de minijuego real para el siguiente paso,
-                # forzamos el éxito del paso pendiente para que la cola avance y no se congele.
-                self.gm.registrar_resultado_minijuego(True)
-                self.gm.minijuego_actual = None
+                # Si el minijuego anterior se destruyó pero seguimos en estado "minijuego",
+                # significa que el pedido tiene otra etapa en su secuencia.
+                id_siguiente = self.gm.get_minijuego_actual_id()
+                if id_siguiente in self.MINIJUEGOS_REGISTRO:
+                    self.gm.minijuego_actual = self.MINIJUEGOS_REGISTRO[id_siguiente]()
+                else:
+                    # Si el ID no está en nuestro registro (como "maiz" por ahora), lo salta para no colgarse
+                    self.gm.registrar_resultado_minijuego(True)
+                    self.gm.minijuego_actual = None
 
     def dibujar(self, pantalla):
         pantalla.fill((40, 30, 25))
         self._botones_pedido.clear()
-        self._boton_exito = None
-        self._boton_fallo = None
 
         self._dibujar_hud(pantalla)
 
@@ -70,7 +82,7 @@ class ScreenJuego:
             if self.gm.minijuego_actual is not None:
                 self.gm.minijuego_actual.dibujar(pantalla)
             else:
-                self._dibujar_placeholder_minijuego(pantalla) # Para "corte" o "maiz" que siguen pendientes
+                self._dibujar_placeholder_minijuego(pantalla)
 
     def _dibujar_hud(self, pantalla):
         tiempo = _formatear_tiempo(self.gm.tiempo_restante)

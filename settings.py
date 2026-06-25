@@ -3,6 +3,7 @@ ANCHO = 800
 ALTO = 600
 FPS = 60
 TITULO = "La Vida da Vueltas: Pollería del Revés"
+HUD_ALTO = 70  # franja superior reservada para timer y dinero
 
 # Colores
 BLANCO = (255, 255, 255)

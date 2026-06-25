@@ -97,4 +97,4 @@ class Corte(MinijuegoBase):
         texto_timer = fuente_ui.render(f"Tiempo: {max(0.0, self.tiempo_restante):.1f}s", True, settings.BLANCO)
         
         pantalla.blit(texto_instruccion, texto_instruccion.get_rect(center=(settings.ANCHO // 2, 230)))
-        pantalla.blit(texto_timer, (20, 20))
+        pantalla.blit(texto_timer, (20, settings.HUD_ALTO + 10))

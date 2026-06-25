@@ -50,7 +50,7 @@ class Maiz(MinijuegoBase):
         texto_instruccion = fuente_titulo.render("¡PRESIONA ESPACIO REPETIDAMENTE!", True, settings.AMARILLO)
         texto_timer = fuente_ui.render(f"Tiempo: {max(0.0, self.tiempo_restante):.1f}s", True, settings.BLANCO)
         pantalla.blit(texto_instruccion, texto_instruccion.get_rect(center=(settings.ANCHO // 2, 180)))
-        pantalla.blit(texto_timer, (20, 20))
+        pantalla.blit(texto_timer, (20, settings.HUD_ALTO + 10))
         
         # 2. Dibujar el contorno de la Barra de Progreso Maíz (Centro de la pantalla)
         ancho_barra = 400

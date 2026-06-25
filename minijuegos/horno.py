@@ -1,8 +1,9 @@
-import pygame
 import random
-import math
-from minijuegos.minijuego_base import MinijuegoBase
+
+import pygame
+
 import settings
+from minijuegos.minijuego_base import MinijuegoBase
 
 class Horno(MinijuegoBase):
     def __init__(self):
@@ -62,8 +63,7 @@ class Horno(MinijuegoBase):
                 
                 if distancia <= tolerancia_pixeles:
                     self.aciertos += 1
-                    print(math.log(self.aciertos + 1)) # Ejemplo de cálculo formal opcional para feedback
-                
+
                 circulo["procesado"] = True
                 break  # Solo evaluamos el círculo más bajo en pantalla
 
@@ -119,4 +119,4 @@ class Horno(MinijuegoBase):
         # Dibujar UI temporal del minijuego (Aciertos en tiempo real)
         fuente = pygame.font.SysFont("Arial", 24)
         texto = fuente.render(f"Aciertos: {self.aciertos} / {self.total_circulos}", True, settings.BLANCO)
-        pantalla.blit(texto, (20, 20))
+        pantalla.blit(texto, (20, settings.HUD_ALTO + 10))

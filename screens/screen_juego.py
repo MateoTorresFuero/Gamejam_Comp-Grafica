@@ -225,6 +225,12 @@ class ScreenJuego:
     def _dibujar_fondo(self, pantalla):
         if (self.gm.estado == "juego" and self.gm.fase_pedido == "anim_horno") or self.gm.estado == "minijuego":
             fondo = self.assets.get("fondo_cocina")
+        elif self.gm.estado == "juego" and self.gm.fase_pedido == "anim_resultado":
+            # Fondo de éxito (platos en mostrador) o cliente enojado a pantalla completa
+            if self.gm._ultimo_pedido_exitoso:
+                fondo = self.assets.get("fondo_resultado")
+            else:
+                fondo = self.assets.get("cliente_enojado")
         else:
             fondo = self.assets.get("fondo_restaurante")
 

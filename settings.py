@@ -2,7 +2,7 @@
 ANCHO = 800
 ALTO = 600
 FPS = 60
-TITULO = "La Vida da Vueltas: Pollería del Revés"
+TITULO = "Don Humano"
 HUD_ALTO = 70  # franja superior reservada para timer y dinero
 
 # Colores
@@ -58,11 +58,9 @@ ANIM_RESULTADO_DURACION = 2.0 # segundos
 # Rutas de assets (relativas a la raíz del proyecto / main.py)
 RUTA_FONDO_RESTAURANTE = "assets/images/fondo_restaurante.png"
 RUTA_FONDO_COCINA = "assets/images/fondo_cocina.png"
-RUTA_POLLO_COCINERO = "assets/images/pollo_cocinero.png"
-RUTA_CLIENTE_FELIZ = "assets/images/cliente_feliz.png"
+RUTA_FONDO_RESULTADO = "assets/images/fondo_resultado.png"
 RUTA_CLIENTE_ENOJADO = "assets/images/cliente_enojado.png"
-RUTA_HUMANO_HORNO = "assets/images/humano_horno.png"
-RUTA_HORNO_GIRATORIO = "assets/images/horno_giratorio.png"
+RUTA_GAMEOVER = "assets/images/gameover.png"
 RUTA_MAIZ = "assets/images/maiz.png"
 RUTA_ZONA_IMPACTO = "assets/images/ui/zona_impacto.png"
 RUTA_BARRA_PROGRESO = "assets/images/ui/barra_progreso.png"
@@ -70,7 +68,7 @@ RUTA_FLECHA_IZQUIERDA = "assets/images/flecha_izquierda.png"
 RUTA_FLECHA_ABAJO = "assets/images/flecha_abajo.png"
 RUTA_FLECHA_ARRIBA = "assets/images/flecha_arriba.png"
 RUTA_FLECHA_DERECHA = "assets/images/flecha_derecha.png"
-RUTA_PEDIDO_CUARTO = "assets/images/pedido_cuarto.png"
-RUTA_PEDIDO_MEDIO = "assets/images/pedido_medio.png"
-RUTA_PEDIDO_ENTERO = "assets/images/pedido_entero.png"
-RUTA_PEDIDO_MAIZ = "assets/images/pedido_maiz.png"
+RUTA_PEDIDO_CUARTO = "assets/images/humano_cuarto.png"
+RUTA_PEDIDO_MEDIO = "assets/images/humano_mitad.png"
+RUTA_PEDIDO_ENTERO = "assets/images/humano_entero.png"
+RUTA_PEDIDO_MAIZ = "assets/images/maiz.png"

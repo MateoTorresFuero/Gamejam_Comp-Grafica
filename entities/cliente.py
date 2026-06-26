@@ -7,7 +7,7 @@ from utils.assets import get_asset_manager
 
 
 class AnimacionClientePedido:
-    """Pollo mesero recibe el pedido (globo con el plato solicitado)."""
+    """El cliente realiza el pedido (globo con el plato solicitado)."""
 
     def __init__(self, nombre_pedido: str) -> None:
         self.nombre_pedido = nombre_pedido
@@ -31,42 +31,55 @@ class AnimacionClientePedido:
             self.terminada = True
 
     def dibujar(self, pantalla: pygame.Surface) -> None:
-        sprite = self._assets.get("pollo_cocinero")
-        if sprite is None:
-            return
+        # El globo de diálogo aparece directamente sobre el cliente de fondo en el mostrador
+        progreso = min(1.0, self.tiempo / max(0.001, self.duracion * 0.4))
 
-        progreso = min(1.0, self.tiempo / max(0.001, self.duracion * 0.6))
-        x_inicio = -40
-        x_fin = settings.ANCHO // 2 - 60
-        x = int(x_inicio + (x_fin - x_inicio) * progreso)
-        y = settings.HUD_ALTO + 200
+        if progreso >= 1.0:
+            bx = settings.ANCHO // 2
+            by = 190
+            
+            # Dibujar el globo
+            txt = self.fuente_bocadillo.render(self.nombre_pedido, True, settings.NEGRO)
+            tw, th = txt.get_size()
+            pad_x, pad_y = 15, 10
+            rect_globo = pygame.Rect(bx - tw // 2 - pad_x, by - th // 2 - pad_y, tw + pad_x * 2, th + pad_y * 2)
+            
+            # Dibujar globo blanco con borde naranja
+            pygame.draw.rect(pantalla, settings.BLANCO, rect_globo, border_radius=10)
+            pygame.draw.rect(pantalla, settings.NARANJA, rect_globo, width=2, border_radius=10)
+            
+            # Dibujar colita del globo apuntando hacia abajo al cliente
+            puntos_triangulo = [
+                (bx - 10, rect_globo.bottom),
+                (bx + 10, rect_globo.bottom),
+                (bx, rect_globo.bottom + 12)
+            ]
+            pygame.draw.polygon(pantalla, settings.BLANCO, puntos_triangulo)
+            pygame.draw.line(pantalla, settings.NARANJA, puntos_triangulo[0], puntos_triangulo[2], 2)
+            pygame.draw.line(pantalla, settings.NARANJA, puntos_triangulo[1], puntos_triangulo[2], 2)
+            
+            pantalla.blit(txt, txt.get_rect(center=rect_globo.center))
 
-        rect = sprite.get_rect(center=(x, y))
-        pantalla.blit(sprite, rect)
+        titulo = self.fuente.render("El cliente realiza un pedido...", True, settings.BLANCO)
+        tw, th = titulo.get_size()
+        pad_x, pad_y = 20, 10
+        rx = settings.ANCHO // 2 - tw // 2 - pad_x
+        ry = settings.HUD_ALTO + 25
 
-        if self.tiempo > self.duracion * 0.35:
-            texto = self.fuente_bocadillo.render(self.nombre_pedido, True, settings.NEGRO)
-            padding = 10
-            bocadillo = texto.get_rect()
-            bocadillo.inflate_ip(padding * 2, padding * 2)
-            bocadillo.center = (x + 130, y - 70)
-            pygame.draw.rect(pantalla, settings.BLANCO, bocadillo, border_radius=8)
-            pygame.draw.rect(pantalla, settings.NARANJA, bocadillo, width=2, border_radius=8)
-            pantalla.blit(texto, texto.get_rect(center=bocadillo.center))
-
-        titulo = self.fuente.render("Pollo mesero toma el pedido...", True, settings.BLANCO)
-        pantalla.blit(titulo, titulo.get_rect(center=(settings.ANCHO // 2, settings.HUD_ALTO + 40)))
+        pill = pygame.Surface((tw + pad_x * 2, th + pad_y * 2), pygame.SRCALPHA)
+        pill.fill((40, 30, 25, 210))  # Tono marrón oscuro del HUD
+        pygame.draw.rect(pill, (*settings.NARANJA, 120), pill.get_rect(), width=2, border_radius=10)
+        pantalla.blit(pill, (rx, ry))
+        pantalla.blit(titulo, (rx + pad_x, ry + pad_y))
 
 
 class AnimacionHumanoHorno:
-    """Humano se acerca al horno en línea recta (horno estático)."""
+    """Humano se acerca al horno en línea recta (horno estático) y cocinero lo persigue."""
 
     def __init__(self) -> None:
         self.tiempo = 0.0
         self.duracion = settings.ANIM_HORNO_DURACION
         self.terminada = False
-        self._assets = get_asset_manager()
-        self.fuente = pygame.font.SysFont("Arial", 22, bold=True)
 
     def reiniciar(self) -> None:
         self.tiempo = 0.0
@@ -80,36 +93,9 @@ class AnimacionHumanoHorno:
             self.terminada = True
 
     def dibujar(self, pantalla: pygame.Surface) -> None:
-        humano_img = self._assets.get("humano_horno")
-        if humano_img is None:
-            return
-
-        cx = settings.ANCHO // 2
-        cy = settings.HUD_ALTO + 260
-
-        # Humano se desliza y se encoge para simular entrar al horno en el fondo de la cocina
-        progreso = min(1.0, self.tiempo / max(0.001, self.duracion * 0.85))
-        x_inicio = 60
-        x_fin = cx + 120
-        x_humano = int(x_inicio + (x_fin - x_inicio) * progreso)
-        y_humano = cy
-
-        """
-        # Reducir escala gradualmente
-        escala = 1.0 - 0.6 * progreso
-        ancho = max(8, int(humano_img.get_width() * escala))
-        alto = max(8, int(humano_img.get_height() * escala))
-        
-        humano_esc = pygame.transform.smoothscale(humano_img, (ancho, alto))
-        humano_rect = humano_esc.get_rect(center=(x_humano, y_humano))
-        pantalla.blit(humano_esc, humano_rect)"""
-
-        # Mantener el tamaño original del personaje
-        humano_rect = humano_img.get_rect(center=(x_humano, y_humano))
-        pantalla.blit(humano_img, humano_rect)
-
-        titulo = self.fuente.render("¡Al horno!", True, settings.BLANCO)
-        pantalla.blit(titulo, titulo.get_rect(center=(settings.ANCHO // 2, settings.HUD_ALTO + 40)))
+        # Solo muestra el fondo de cocina (gestionado por _dibujar_fondo).
+        # No se dibuja ningún sprite ni texto en esta transición.
+        pass
 
 
 class AnimacionResultadoCliente:
@@ -143,25 +129,32 @@ class AnimacionResultadoCliente:
         cx = settings.ANCHO // 2
         cy = settings.HUD_ALTO + 240
 
-        # Dibujar cliente enojado si no fue exitoso
-        if not self.feliz:
-            sprite = self._assets.get("cliente_enojado")
-            if sprite is not None:
-                pantalla.blit(sprite, sprite.get_rect(center=(cx, cy)))
-
         if self.feliz:
             mensaje = "¡Cliente satisfecho! Pedido entregado."
-            color = settings.AMARILLO
+            color_texto = settings.AMARILLO
+            color_fondo = (30, 25, 10, 200)   # ámbar muy oscuro semitransparente
         else:
+            # El cliente enojado ya está dibujado como fondo a pantalla completa
             mensaje = "¡Cliente enojado! Se fue sin pagar."
-            color = settings.ROJO
+            color_texto = settings.BLANCO
+            color_fondo = (80, 10, 10, 210)   # rojo oscuro semitransparente
 
-        titulo = self.fuente.render(mensaje, True, color)
-        pantalla.blit(titulo, titulo.get_rect(center=(settings.ANCHO // 2, settings.HUD_ALTO + 40)))
+        titulo = self.fuente.render(mensaje, True, color_texto)
+        tw, th = titulo.get_size()
+        pad_x, pad_y = 20, 10
+        rx = settings.ANCHO // 2 - tw // 2 - pad_x
+        ry = settings.HUD_ALTO + 25
+
+        # Fondo semitransparente tipo pill detrás del texto
+        pill = pygame.Surface((tw + pad_x * 2, th + pad_y * 2), pygame.SRCALPHA)
+        pill.fill(color_fondo)
+        pygame.draw.rect(pill, (*color_texto[:3], 120), pill.get_rect(), width=2, border_radius=10)
+        pantalla.blit(pill, (rx, ry))
+        pantalla.blit(titulo, (rx + pad_x, ry + pad_y))
 
         # Dibujar los platos completados directamente sobre el mostrador
         if self.feliz and self.tipo_pedido:
-            y_base = 400
+            y_base = 490  # Altura del mostrador de madera en fondo_resultado
             
             if self.con_maiz:
                 x_humano = 310
@@ -184,7 +177,7 @@ class AnimacionResultadoCliente:
                     from entities.pedido import NOMBRES_PLATO
                     nombre_plato = NOMBRES_PLATO.get(self.tipo_pedido, "")
                     lbl_h = self.fuente.render(nombre_plato, True, settings.BLANCO)
-                    pantalla.blit(lbl_h, lbl_h.get_rect(center=(x_humano, y_base + 80)))
+                    pantalla.blit(lbl_h, lbl_h.get_rect(center=(x_humano, y_base - 55)))
                 
                 # 3. Dibujar maíz
                 img_maiz = self._assets.get("pedido_maiz")
@@ -193,7 +186,7 @@ class AnimacionResultadoCliente:
                     pantalla.blit(img_maiz, rect_m)
                     
                     lbl_m = self.fuente.render("Maíz", True, settings.BLANCO)
-                    pantalla.blit(lbl_m, lbl_m.get_rect(center=(x_maiz, y_base + 80)))
+                    pantalla.blit(lbl_m, lbl_m.get_rect(center=(x_maiz, y_base - 55)))
             else:
                 x_humano = 400
                 
@@ -211,4 +204,5 @@ class AnimacionResultadoCliente:
                     from entities.pedido import NOMBRES_PLATO
                     nombre_plato = NOMBRES_PLATO.get(self.tipo_pedido, "")
                     lbl_h = self.fuente.render(nombre_plato, True, settings.BLANCO)
-                    pantalla.blit(lbl_h, lbl_h.get_rect(center=(x_humano, y_base + 80)))
+                    pantalla.blit(lbl_h, lbl_h.get_rect(center=(x_humano, y_base - 55)))
+

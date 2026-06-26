@@ -40,7 +40,7 @@ class ScreenInicio:
         pantalla.blit(overlay, (0, 0))
 
         # --- Título con sombra ---
-        titulo_texto = "Pollería del Revés"
+        titulo_texto = "Don Humano"
         sombra = self.fuente_titulo.render(titulo_texto, True, (0, 0, 0))
         titulo = self.fuente_titulo.render(titulo_texto, True, NARANJA)
         cx = ANCHO // 2
@@ -48,7 +48,7 @@ class ScreenInicio:
         pantalla.blit(titulo, titulo.get_rect(center=(cx, 190)))
 
         # --- Subtítulo ---
-        sub = self.fuente_subtitulo.render("La vida da vueltas, como un pollo a la brasa...", True, AMARILLO)
+        sub = self.fuente_subtitulo.render("¡El crujiente sabor de la humanidad!", True, AMARILLO)
         pantalla.blit(sub, sub.get_rect(center=(cx, 255)))
 
         # --- Separador decorativo ---

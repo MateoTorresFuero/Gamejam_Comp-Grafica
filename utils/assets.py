@@ -29,10 +29,15 @@ def cargar_imagen(
     *,
     color_fallback: tuple[int, int, int] = (120, 80, 60),
     etiqueta_fallback: str = "?",
+    colorkey: tuple[int, int, int] | None = None,
 ) -> pygame.Surface:
     ruta = _ruta_asset(ruta_relativa)
     try:
-        imagen = pygame.image.load(str(ruta)).convert_alpha()
+        if colorkey is not None:
+            imagen = pygame.image.load(str(ruta)).convert()
+            imagen.set_colorkey(colorkey)
+        else:
+            imagen = pygame.image.load(str(ruta)).convert_alpha()
         return pygame.transform.smoothscale(imagen, tamaño)
     except (FileNotFoundError, pygame.error):
         return _placeholder_rect(tamaño, color_fallback, etiqueta_fallback)
@@ -63,35 +68,23 @@ class AssetManager:
             color_fallback=(30, 25, 25),
             etiqueta_fallback="COCINA",
         )
-        self._cache["pollo_cocinero"] = cargar_imagen(
-            settings.RUTA_POLLO_COCINERO,
-            (256, 256),
-            color_fallback=settings.NARANJA,
-            etiqueta_fallback="MESERO",
-        )
-        self._cache["cliente_feliz"] = cargar_imagen(
-            settings.RUTA_CLIENTE_FELIZ,
-            (300,300),
-            color_fallback=settings.AMARILLO,
-            etiqueta_fallback="FELIZ",
+        self._cache["fondo_resultado"] = cargar_imagen(
+            settings.RUTA_FONDO_RESULTADO,
+            (settings.ANCHO, settings.ALTO),
+            color_fallback=(35, 30, 30),
+            etiqueta_fallback="RESULTADO",
         )
         self._cache["cliente_enojado"] = cargar_imagen(
             settings.RUTA_CLIENTE_ENOJADO,
-            (300,300),
+            (settings.ANCHO, settings.ALTO),
             color_fallback=settings.ROJO,
             etiqueta_fallback="ENOJ",
         )
-        self._cache["humano_horno"] = cargar_imagen(
-            settings.RUTA_HUMANO_HORNO,
-            (256,256),
-            color_fallback=(220, 180, 140),
-            etiqueta_fallback="HUM",
-        )
-        self._cache["horno_giratorio"] = cargar_imagen(
-            settings.RUTA_HORNO_GIRATORIO,
-            (128, 128),
-            color_fallback=settings.NARANJA,
-            etiqueta_fallback="HORNO",
+        self._cache["gameover"] = cargar_imagen(
+            settings.RUTA_GAMEOVER,
+            (settings.ANCHO, settings.ALTO),
+            color_fallback=settings.ROJO,
+            etiqueta_fallback="GAMEOVER",
         )
         self._cache["maiz"] = cargar_imagen(
             settings.RUTA_MAIZ,

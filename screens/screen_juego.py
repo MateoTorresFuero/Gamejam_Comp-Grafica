@@ -163,7 +163,11 @@ class ScreenJuego:
 
         if self.gm.estado == "juego" and self.gm.fase_pedido == "anim_resultado":
             if self._fase_anterior != "anim_resultado":
-                self.anim_resultado.reiniciar(bool(self.gm._ultimo_pedido_exitoso))
+                self.anim_resultado.reiniciar(
+                    feliz=bool(self.gm._ultimo_pedido_exitoso),
+                    tipo_pedido=self.gm._ultimo_pedido.tipo if self.gm._ultimo_pedido else None,
+                    con_maiz=self.gm._ultimo_pedido.con_maiz if self.gm._ultimo_pedido else False
+                )
             self.anim_resultado.actualizar(dt)
             if self.anim_resultado.terminada:
                 self.gm.finalizar_resultado_pedido()

@@ -33,6 +33,7 @@ class GameManager:
         self.indice_minijuego: int = 0
         self.fase_pedido: str | None = None   # anim_cliente | anim_horno | anim_resultado
         self._ultimo_pedido_exitoso: bool | None = None
+        self._ultimo_pedido: Pedido | None = None
         self._estado_previo: str | None = None
         self._fallos_pedido_actual: int = 0   # fallos en el pedido en curso (para bonus de tiempo)
         self._pedido_cancelado: bool = False
@@ -58,6 +59,7 @@ class GameManager:
         self.indice_minijuego = 0
         self.fase_pedido = None
         self._ultimo_pedido_exitoso = None
+        self._ultimo_pedido = None
         self._fallos_pedido_actual = 0
         self.estado = "juego"
         self._llenar_cola_pedidos()
@@ -232,6 +234,7 @@ class GameManager:
 
     def _mostrar_resultado_pedido(self, exito: bool) -> None:
         self._ultimo_pedido_exitoso = exito
+        self._ultimo_pedido = self.pedido_activo
         self.pedido_activo = None
         self.indice_minijuego = 0
         self.minijuego_actual = None

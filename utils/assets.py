@@ -135,6 +135,30 @@ class AssetManager:
             color_fallback=(80, 80, 80),
             etiqueta_fallback="BAR",
         )
+        self._cache["pedido_cuarto"] = cargar_imagen(
+            settings.RUTA_PEDIDO_CUARTO,
+            (128, 128),
+            color_fallback=(200, 150, 100),
+            etiqueta_fallback="1/4 HUM",
+        )
+        self._cache["pedido_medio"] = cargar_imagen(
+            settings.RUTA_PEDIDO_MEDIO,
+            (128, 128),
+            color_fallback=(220, 160, 110),
+            etiqueta_fallback="1/2 HUM",
+        )
+        self._cache["pedido_entero"] = cargar_imagen(
+            settings.RUTA_PEDIDO_ENTERO,
+            (128, 128),
+            color_fallback=(240, 170, 120),
+            etiqueta_fallback="ENTERO",
+        )
+        self._cache["pedido_maiz"] = cargar_imagen(
+            settings.RUTA_PEDIDO_MAIZ,
+            (128, 128),
+            color_fallback=settings.AMARILLO,
+            etiqueta_fallback="MAIZ",
+        )
 
 
 _asset_manager: AssetManager | None = None

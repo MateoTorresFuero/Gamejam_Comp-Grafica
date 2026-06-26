@@ -120,11 +120,15 @@ class AnimacionResultadoCliente:
         self.duracion = settings.ANIM_RESULTADO_DURACION
         self.terminada = False
         self.feliz = True
+        self.tipo_pedido: str | None = None
+        self.con_maiz = False
         self._assets = get_asset_manager()
         self.fuente = pygame.font.SysFont("Arial", 24, bold=True)
 
-    def reiniciar(self, feliz: bool) -> None:
+    def reiniciar(self, feliz: bool, tipo_pedido: str | None = None, con_maiz: bool = False) -> None:
         self.feliz = feliz
+        self.tipo_pedido = tipo_pedido
+        self.con_maiz = con_maiz
         self.tiempo = 0.0
         self.terminada = False
 
@@ -136,14 +140,14 @@ class AnimacionResultadoCliente:
             self.terminada = True
 
     def dibujar(self, pantalla: pygame.Surface) -> None:
-        clave = "cliente_feliz" if self.feliz else "cliente_enojado"
-        sprite = self._assets.get(clave)
-        if sprite is None:
-            return
-
         cx = settings.ANCHO // 2
         cy = settings.HUD_ALTO + 240
-        pantalla.blit(sprite, sprite.get_rect(center=(cx, cy)))
+
+        # Dibujar cliente enojado si no fue exitoso
+        if not self.feliz:
+            sprite = self._assets.get("cliente_enojado")
+            if sprite is not None:
+                pantalla.blit(sprite, sprite.get_rect(center=(cx, cy)))
 
         if self.feliz:
             mensaje = "¡Cliente satisfecho! Pedido entregado."
@@ -154,3 +158,57 @@ class AnimacionResultadoCliente:
 
         titulo = self.fuente.render(mensaje, True, color)
         pantalla.blit(titulo, titulo.get_rect(center=(settings.ANCHO // 2, settings.HUD_ALTO + 40)))
+
+        # Dibujar los platos completados directamente sobre el mostrador
+        if self.feliz and self.tipo_pedido:
+            y_base = 400
+            
+            if self.con_maiz:
+                x_humano = 310
+                x_maiz = 490
+                
+                # 1. Dibujar platos (elipses simulando platos planos en el mostrador)
+                pygame.draw.ellipse(pantalla, (220, 220, 220), (x_humano - 75, y_base + 35, 150, 30))
+                pygame.draw.ellipse(pantalla, (180, 180, 180), (x_humano - 75, y_base + 35, 150, 30), width=2)
+                
+                pygame.draw.ellipse(pantalla, (220, 220, 220), (x_maiz - 75, y_base + 35, 150, 30))
+                pygame.draw.ellipse(pantalla, (180, 180, 180), (x_maiz - 75, y_base + 35, 150, 30), width=2)
+                
+                # 2. Dibujar porción humana
+                clave_humano = f"pedido_{self.tipo_pedido}"
+                img_humano = self._assets.get(clave_humano)
+                if img_humano:
+                    rect_h = img_humano.get_rect(center=(x_humano, y_base))
+                    pantalla.blit(img_humano, rect_h)
+                    
+                    from entities.pedido import NOMBRES_PLATO
+                    nombre_plato = NOMBRES_PLATO.get(self.tipo_pedido, "")
+                    lbl_h = self.fuente.render(nombre_plato, True, settings.BLANCO)
+                    pantalla.blit(lbl_h, lbl_h.get_rect(center=(x_humano, y_base + 80)))
+                
+                # 3. Dibujar maíz
+                img_maiz = self._assets.get("pedido_maiz")
+                if img_maiz:
+                    rect_m = img_maiz.get_rect(center=(x_maiz, y_base))
+                    pantalla.blit(img_maiz, rect_m)
+                    
+                    lbl_m = self.fuente.render("Maíz", True, settings.BLANCO)
+                    pantalla.blit(lbl_m, lbl_m.get_rect(center=(x_maiz, y_base + 80)))
+            else:
+                x_humano = 400
+                
+                # 1. Dibujar plato plano en el mostrador
+                pygame.draw.ellipse(pantalla, (220, 220, 220), (x_humano - 85, y_base + 35, 170, 34))
+                pygame.draw.ellipse(pantalla, (180, 180, 180), (x_humano - 85, y_base + 35, 170, 34), width=2)
+                
+                # 2. Dibujar porción humana
+                clave_humano = f"pedido_{self.tipo_pedido}"
+                img_humano = self._assets.get(clave_humano)
+                if img_humano:
+                    rect_h = img_humano.get_rect(center=(x_humano, y_base))
+                    pantalla.blit(img_humano, rect_h)
+                    
+                    from entities.pedido import NOMBRES_PLATO
+                    nombre_plato = NOMBRES_PLATO.get(self.tipo_pedido, "")
+                    lbl_h = self.fuente.render(nombre_plato, True, settings.BLANCO)
+                    pantalla.blit(lbl_h, lbl_h.get_rect(center=(x_humano, y_base + 80)))

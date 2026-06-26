@@ -6,7 +6,6 @@ from settings import (
     PRECIO_ENTERO,
     PRECIO_MAIZ,
     PRECIO_MEDIO,
-    PRECIO_MINIMO_COBRO,
 )
 
 TIPOS_PLATO = {
@@ -44,6 +43,7 @@ class Pedido:
         self.precio_actual = self.precio_base
         self.minijuegos = _secuencia_minijuegos(tipo, con_maiz)
         self.cancelado = False
+        self.fallos = 0
 
     @property
     def nombre(self) -> str:
@@ -53,8 +53,10 @@ class Pedido:
         return nombre
 
     def aplicar_penalizacion(self) -> None:
+        self.fallos += 1
         self.precio_actual -= PENALIZACION_FALLO
-        if self.precio_actual <= PRECIO_MINIMO_COBRO:
+        # El pedido se cancela si el jugador falló TODOS los minijuegos
+        if self.fallos >= len(self.minijuegos):
             self.cancelado = True
 
     @classmethod
@@ -62,3 +64,4 @@ class Pedido:
         tipo = random.choice(list(TIPOS_PLATO.keys()))
         con_maiz = random.choice([True, False])
         return cls(tipo, con_maiz)
+

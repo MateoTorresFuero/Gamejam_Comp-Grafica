@@ -1,5 +1,5 @@
 from entities.pedido import Pedido
-from settings import META_DINERO, PRECIO_MINIMO_COBRO, TIEMPO_LIMITE
+from settings import META_DINERO, TIEMPO_LIMITE
 
 PEDIDOS_EN_COLA = 3
 
@@ -125,8 +125,7 @@ class GameManager:
         if self.pedido_activo is None:
             return
 
-        if self.pedido_activo.precio_actual > PRECIO_MINIMO_COBRO:
-            self.dinero_acumulado += self.pedido_activo.precio_actual
+        self.dinero_acumulado += self.pedido_activo.precio_actual
 
         self._mostrar_resultado_pedido(exito=True)
 
